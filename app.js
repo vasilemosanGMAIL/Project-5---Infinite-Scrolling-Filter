@@ -4,17 +4,16 @@ const searchURL = "https://jsonplaceholder.typicode.com/posts?q=";
 //dom elements
 const posts = document.getElementById("posts");
 const filter = document.getElementById("filter1");
-
 let limit = 3;
 let page = 1;
+let URLtofetch = `${allPostURL}?_limit=${limit}&_page=${page}`;
 
 //load initial 3 posts
-document.addEventListener("DOMContentLoaded", getPosts);
+document.addEventListener("DOMContentLoaded", getPosts(URLtofetch));
 
-async function getPosts() {
-  let URLtofetch = `${allPostURL}?_limit=${limit}&_page=${page}`;
+async function getPosts(linkURL) {
   try {
-    const postslist = await fetch(URLtofetch);
+    const postslist = await fetch(linkURL);
     const postsData = await postslist.json();
     postsData.forEach((elemnt) => {
       const div = document.createElement("div");
@@ -32,6 +31,23 @@ async function getPosts() {
     console.log(error);
   }
 }
+//search function
+async function searchPosts(e) {
+  try {
+    const srch = filter.value;
+
+    if (srch != "") {
+      posts.innerHTML = "";
+      await getPosts(`${searchURL}${srch}`);
+    } else {
+      posts.innerHTML = "";
+      await getPosts(allPostURL);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  e.preventDefault();
+}
 
 //event listeners
 window.addEventListener("scroll", () => {
@@ -40,23 +56,7 @@ window.addEventListener("scroll", () => {
     document.documentElement.scrollHeight - 3
   ) {
     page++;
-    getPosts();
+    getPosts(`${allPostURL}?_limit=${limit}&_page=${page}`);
   }
 });
-
-async function searchPosts() {
-  try {
-    const srch = filter.value;
-
-    if (srch != "") {
-      posts.innerHTML = "";
-      await getPosts(`${searchURL}${srch}`);
-      filter.value = "";
-    } else {
-      posts.innerHTML = "";
-      await getPosts();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
+filter.addEventListener("input", searchPosts);
